@@ -1,0 +1,9 @@
+E:\C#\ADPC\bin\Debug\netstandard2.0\ADPC.deps.json
+E:\C#\ADPC\bin\Debug\netstandard2.0\ADPC.dll
+E:\C#\ADPC\bin\Debug\netstandard2.0\ADPC.pdb
+E:\C#\ADPC\obj\Debug\netstandard2.0\ADPC.csprojAssemblyReference.cache
+E:\C#\ADPC\obj\Debug\netstandard2.0\ADPC.csproj.CoreCompileInputs.cache
+E:\C#\ADPC\obj\Debug\netstandard2.0\ADPC.AssemblyInfoInputs.cache
+E:\C#\ADPC\obj\Debug\netstandard2.0\ADPC.AssemblyInfo.cs
+E:\C#\ADPC\obj\Debug\netstandard2.0\ADPC.dll
+E:\C#\ADPC\obj\Debug\netstandard2.0\ADPC.pdb
