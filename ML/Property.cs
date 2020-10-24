@@ -6,6 +6,7 @@ namespace ADPC.ML
 {
     public static class Property
     {
+        [Serializable]
         public enum Emotion
         {
             Angry,
@@ -13,6 +14,7 @@ namespace ADPC.ML
             Sad,
             Laugh,
         }
+        [Serializable]
         public struct PosNegPercent
         {
             public float Positive;
