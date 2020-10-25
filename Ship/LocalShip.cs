@@ -7,21 +7,21 @@ using System.Threading.Tasks;
 
 namespace ADPC.Ship
 {
-    public class LocalShip:IShip // save files for private, public - loggings
+    public class LocalShip : IShip // save files for private, public - loggings
     {
-        
+
 
         private static string documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         public static string TEST_DIR_PATH = $@"{documents}";//$@"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\ADPCTEST";
         private static string privateDftRootPath = $@"{TEST_DIR_PATH}/Privates";
-        
+
         private Dictionary<CargoType, string> privateSavepathByCargo;
         private string publicLogSavepath;
         private string cargoReportSavepath;
 
         #region Property Getter Setter
-        public string PublicLogSavepath 
-        { 
+        public string PublicLogSavepath
+        {
             get
             {
                 return publicLogSavepath;
@@ -40,7 +40,7 @@ namespace ADPC.Ship
             {
                 return cargoReportSavepath;
             }
-            set 
+            set
             {
                 if (value.IsValidPath())
                     cargoReportSavepath = value;
@@ -48,6 +48,7 @@ namespace ADPC.Ship
                     cargoReportSavepath = null;
             }
         }
+
         public void SetPrivateSavepath(CargoType cargo, string path)
         {
             if (path.IsValidPath())
@@ -94,19 +95,34 @@ namespace ADPC.Ship
         { }
 
         #endregion
-        
+
+
+        /*
+         * 
+         * Idenify
+         * cargo = last char = 'c'
+         * report = last char = 'r'
+         * each log = last char = 'l'
+         * 
+         */
+
         #region Loadings
 
         public void LoadPrivate(ILoadable cargo)
         {
-            cargos.Push(cargo);
+            if (cargo.IsEmpty())
+                throw new CargoException(CargoExceptionMsg.Empty);
+            if (cargo != null)
+                cargos.Push(cargo);
         }
         public void LoadPublicLog(LogCargo log)
         {
+            if (log.IsEmpty())
+                throw new CargoException(CargoExceptionMsg.Empty);
             if (log.IsLocked)
                 logCargos.Push(log);
             else
-                throw new CargoException("Cargo is not locked");
+                throw new CargoException(CargoExceptionMsg.Locked);
         }
         public void LoadReports(CargoReport report)
         {
@@ -115,48 +131,98 @@ namespace ADPC.Ship
 
         #endregion
         #region Unloadings
-        
-        /*
-         * Unloading을 해야하는가?
-         * 
-         * 답 : 
-         */
+
+        public IEnumerable<CargoReport> UnloadCargoReports(UnloadFilter filter = null)
+        {
+            string[] filePaths = Directory.GetFiles(CargoReportSavepath, $"{(filter == null ? "*r" : filter.ToString())}.dat", SearchOption.TopDirectoryOnly);
+
+            var bs = new BinarySaver();
+            foreach (var path in filePaths)
+            {
+                var r = bs.TransferBinary<CargoReport>(path);
+                if (r != default)
+                    yield return r;
+            }
+
+        }
+        public IEnumerable<LogCargo> UnloadPublicLogs(UnloadFilter logCargoFilter = null, UnloadFilter logDatFilter = null)
+        {
+            string[] cargoDirs = Directory.GetDirectories(PublicLogSavepath, $"{(logCargoFilter == null ? "*" : logCargoFilter.ToString())}", SearchOption.TopDirectoryOnly);
+            var bs = new BinarySaver();
+            foreach (var cargoDir in cargoDirs)
+            {
+                string[] logs = Directory.GetFiles(cargoDir, $"{(logDatFilter == null ? "*l" : logDatFilter.ToString())}.dat", SearchOption.TopDirectoryOnly);
+                
+                if (logs.Length <= 0) //Check Empty Cargo <- But Already blocked at Loading to ship.
+                    continue;
+
+                LogCargo lc = new LogCargo();
+
+                foreach (var logfile in logs) //Get each logs in cargo(cargo = folder, log = .dat) only for this
+                {
+                    var log = bs.TransferBinary<Log.IActivityLog>(logfile);
+                    if (log != default)
+                        lc.Load(log);
+                }
+
+                lc.Lock();
+                yield return lc;
+            }
+        }
+
+        public IEnumerable<ILoadable> UnloadPrivate(CargoType type, UnloadFilter cargoFilter=null)
+        {
+            var bs = new BinarySaver();
+            var cargoDir = GetPrivateSavepath(type);
+            if (Directory.Exists(cargoDir))
+            {
+                string[] dats = Directory.GetFiles(cargoDir, $"{(cargoFilter == null ? "*c" : cargoFilter.ToString())}.dat", SearchOption.TopDirectoryOnly);
+
+                foreach(var dat in dats)
+                {
+                    yield return bs.TransferBinary<ILoadable>(dat);
+                }
+            }
+
+        }
 
         #endregion
         #region Pulling Away
+
         public void PullAwayCargoReports() //Save cargo report
         {
-            if (!Directory.Exists(cargoReportSavepath))
-                Directory.CreateDirectory(cargoReportSavepath);
+            if (!Directory.Exists(CargoReportSavepath))
+                Directory.CreateDirectory(CargoReportSavepath).Attributes = FileAttributes.Hidden;
             var bs = new BinarySaver();
 
-            while(reports.Count > 0)
+            while (reports.Count > 0)
             {
                 var report = reports.Pop();
-                bs.Savepath = $@"{cargoReportSavepath}/{report.ReportedTime.ToDefault()}.dat";
+                bs.Savepath = $@"{CargoReportSavepath}/{report.ReportedTime.ToDefault()}r.dat";
                 bs.TransferToBinary(report);
             }
         }
-        public void PullAwayPublicLogs() //Save each log in cargo
+        public void PullAwayPublicLogs() //Save(dat) each **log** in cargo
         {
-            if (!Directory.Exists(publicLogSavepath))
-                Directory.CreateDirectory(publicLogSavepath);
+            if (!Directory.Exists(PublicLogSavepath))
+                Directory.CreateDirectory(PublicLogSavepath);
             var bs = new BinarySaver();
-            
+
             while (logCargos.Count > 0)
             {
                 var logCargo = logCargos.Pop();
+
                 if (logCargo.PrimaryTime == null)
                     logCargo.SetPrimaryTimeOnce(DateTime.Now); //Must be preserve!
 
-                var logCargoDirPath = $@"{publicLogSavepath}/{logCargo.PrimaryTime.GetValueOrDefault().ToDefault()}";
+                var logCargoDirPath = $@"{PublicLogSavepath}/{logCargo.PrimaryTime.GetValueOrDefault().ToDefault()}";
                 if (!Directory.Exists(logCargoDirPath))
                     Directory.CreateDirectory(logCargoDirPath);
-                
-                foreach(Log.IActivityLog log in logCargo.GetLogs())
+
+                foreach (Log.IActivityLog log in logCargo.GetLogs())
                 {
-                    bs.Savepath = $@"{logCargoDirPath}/{log.Time.ToDefault()}.dat";
-                    bs.TransferToBinary(log);
+                    bs.Savepath = $@"{logCargoDirPath}/{log.Time.ToDefault()}l.dat";
+                    bs.TransferToBinary<Log.IActivityLog>(log);
                 }
 
             }
@@ -175,7 +241,7 @@ namespace ADPC.Ship
                 if (cargo.PrimaryTime == null)
                     cargo.SetPrimaryTimeOnce(DateTime.Now); //Must be preserve!
 
-                bs.Savepath = $@"{privateSavepathByCargo[cargo.Type]}/{cargo.PrimaryTime.GetValueOrDefault().ToDefault()}.dat";
+                bs.Savepath = $@"{privateSavepathByCargo[cargo.Type]}/{cargo.PrimaryTime.GetValueOrDefault().ToDefault()}c.dat";
                 switch (cargo.Type)
                 {
                     case CargoType.GenericObject:
@@ -193,20 +259,17 @@ namespace ADPC.Ship
                 }
             }
 
-            
+
         }
         public async Task PullAwayAsync()
         {
             var pullingPublic = Task.Run(new Action(() => PullAwayPublicLogs()));
-            var pullingPrivate = Task.Run(new Action(() => PullAwayPrivateCargos() ));
+            var pullingPrivate = Task.Run(new Action(() => PullAwayPrivateCargos()));
             PullAwayCargoReports();
 
             await pullingPublic;
             await pullingPrivate;
         }
         #endregion
-        /* 
-         
-         */
     }
 }
