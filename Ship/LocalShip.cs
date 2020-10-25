@@ -10,9 +10,9 @@ namespace ADPC.Ship
     public class LocalShip : IShip // save files for private, public - loggings
     {
 
-
+        private static string adpctest = $@"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\ADPCTEST";
         private static string documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        public static string TEST_DIR_PATH = $@"{documents}";//$@"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\ADPCTEST";
+        public static string TEST_DIR_PATH = $@"{adpctest}";
         private static string privateDftRootPath = $@"{TEST_DIR_PATH}/Privates";
 
         private Dictionary<CargoType, string> privateSavepathByCargo;
