@@ -9,11 +9,11 @@ namespace ADPC.Ship
 {
     public class LocalShip:IShip // save files for private, public - loggings
     {
-        public static string TEST_DIR_PATH = @"C:\Users\minwo\Desktop\ADPC테스트";
+        
 
         private static string documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-
-        private static string privateDftRootPath = $@"{TEST_DIR_PATH}/Windows App";
+        public static string TEST_DIR_PATH = $@"{documents}";//$@"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\ADPCTEST";
+        private static string privateDftRootPath = $@"{TEST_DIR_PATH}/Privates";
         
         private Dictionary<CargoType, string> privateSavepathByCargo;
         private string publicLogSavepath;
@@ -195,7 +195,7 @@ namespace ADPC.Ship
 
             
         }
-        public async void PullAway()
+        public async Task PullAwayAsync()
         {
             var pullingPublic = Task.Run(new Action(() => PullAwayPublicLogs()));
             var pullingPrivate = Task.Run(new Action(() => PullAwayPrivateCargos() ));
