@@ -10,5 +10,6 @@ namespace ADPC.Cargo
         //PrimaryTime is the first time to load to ship. it preserve as filename. never change
         DateTime? PrimaryTime { get; }
         void SetPrimaryTimeOnce(DateTime t);
+        bool IsEmpty();
     }
 }

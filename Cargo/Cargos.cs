@@ -29,20 +29,36 @@ namespace ADPC.Cargo
         {
             return Data.ToString();
         }
+        public bool IsEmpty()
+        {
+            return Data == null || Data == "" ? true : false;
+        }
     }
     [Serializable]
     public class TextCargo : ILoadable
     {
         public CargoType Type { get; } = CargoType.Text;
         public DateTime? PrimaryTime { get; private set; } = null;
+        private string text { get; set; }
         public void SetPrimaryTimeOnce(DateTime t) => PrimaryTime = t;
+        public bool IsEmpty()
+        {
+            return text == null || text.Length <= 0 ? true : false;
+        }
     }
     [Serializable]
     public class VoiceCargo : ILoadable
     {
         public CargoType Type { get; } = CargoType.Voice;
         public DateTime? PrimaryTime { get; private set; } = null;
+
+        private byte[] rawVoice { get; set; }
+
         public void SetPrimaryTimeOnce(DateTime t) => PrimaryTime = t;
+        public bool IsEmpty()
+        {
+            return rawVoice == null || rawVoice.Length <= 0 ? true : false;
+        }
     }
     [Serializable]
     public class LogCargo : ILoadable
@@ -65,6 +81,13 @@ namespace ADPC.Cargo
             else
                 throw new CargoException("Already locked cargo");
         }
+        public void Load(IActivityLog log)
+        {
+            if (!IsLocked)
+                logs.Push(log);
+            else
+                throw new CargoException("Already locked cargo");
+        }
 
         public void Lock()
         {
@@ -79,6 +102,10 @@ namespace ADPC.Cargo
         public Stack<IActivityLog> GetLogs()
         {
             return logs;
+        }
+        public bool IsEmpty()
+        {
+            return logs.Count <= 0 ? true : false;
         }
     }
 }
