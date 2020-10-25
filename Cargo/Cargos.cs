@@ -19,19 +19,29 @@ namespace ADPC.Cargo
     {
         public CargoType Type { get; } = CargoType.GenericObject;
         public DateTime? PrimaryTime { get; private set; }
+        public bool IsLocked { get; set; } = false;
         public string Data { get; set; }
 
-        public RawCargo() 
+        public RawCargo()
         {
         }
-        public void SetPrimaryTimeOnce(DateTime t) => PrimaryTime = t;
         public string GetRaw()
         {
             return Data.ToString();
         }
+        public void SetPrimaryTimeOnce(DateTime t) => PrimaryTime = t;
+
         public bool IsEmpty()
         {
             return Data == null || Data == "" ? true : false;
+        }
+        public void Lock()
+        {
+            IsLocked = true;
+        }
+        public void UnLock()
+        {
+            IsLocked = false;
         }
     }
     [Serializable]
@@ -39,11 +49,31 @@ namespace ADPC.Cargo
     {
         public CargoType Type { get; } = CargoType.Text;
         public DateTime? PrimaryTime { get; private set; } = null;
-        private string text { get; set; }
+        public bool IsLocked { get; set; } = false;
+        public List<string> Texts { get; private set; }
+        public TextCargo()
+        {
+            Texts = new List<string>();
+        }
+        public void Load(string text)
+        {
+            if (!IsLocked)
+                Texts.Add(text);
+            else
+                throw new CargoException(CargoExceptionMsg.Locked);
+        }
         public void SetPrimaryTimeOnce(DateTime t) => PrimaryTime = t;
         public bool IsEmpty()
         {
-            return text == null || text.Length <= 0 ? true : false;
+            return Texts == null || Texts.Count <= 0 ? true : false;
+        }
+        public void Lock()
+        {
+            IsLocked = true;
+        }
+        public void UnLock()
+        {
+            IsLocked = false;
         }
     }
     [Serializable]
@@ -51,13 +81,21 @@ namespace ADPC.Cargo
     {
         public CargoType Type { get; } = CargoType.Voice;
         public DateTime? PrimaryTime { get; private set; } = null;
-
+        public bool IsLocked { get; set; } = false;
         private byte[] rawVoice { get; set; }
 
         public void SetPrimaryTimeOnce(DateTime t) => PrimaryTime = t;
         public bool IsEmpty()
         {
             return rawVoice == null || rawVoice.Length <= 0 ? true : false;
+        }
+        public void Lock()
+        {
+            IsLocked = true;
+        }
+        public void UnLock()
+        {
+            IsLocked = false;
         }
     }
     [Serializable]
@@ -67,7 +105,8 @@ namespace ADPC.Cargo
         public DateTime? PrimaryTime { get; private set; } = null;
 
         private Stack<IActivityLog> logs { get; set; }
-        public bool IsLocked = false;
+
+        public bool IsLocked { get; set; } = false;
 
         public LogCargo()
         {
@@ -79,16 +118,19 @@ namespace ADPC.Cargo
             if (!IsLocked)
                 logs.Push(new ActivityLog(time, element, mousePoint));
             else
-                throw new CargoException("Already locked cargo");
+                throw new CargoException(CargoExceptionMsg.Locked);
         }
         public void Load(IActivityLog log)
         {
             if (!IsLocked)
                 logs.Push(log);
             else
-                throw new CargoException("Already locked cargo");
+                throw new CargoException(CargoExceptionMsg.Locked);
         }
-
+        public Stack<IActivityLog> GetLogs()
+        {
+            return logs;
+        }
         public void Lock()
         {
             IsLocked = true;
@@ -99,10 +141,7 @@ namespace ADPC.Cargo
         }
         public void SetPrimaryTimeOnce(DateTime t) => PrimaryTime = t;
 
-        public Stack<IActivityLog> GetLogs()
-        {
-            return logs;
-        }
+
         public bool IsEmpty()
         {
             return logs.Count <= 0 ? true : false;

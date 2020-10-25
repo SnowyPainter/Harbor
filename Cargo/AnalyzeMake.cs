@@ -11,6 +11,11 @@ namespace ADPC.Cargo
         {
             var report = new CargoReport();
 
+            foreach(var t in cargo.Texts)
+            {
+                //Analyze text - emotion, pnp
+            }
+
             return report;
         }
         public static CargoReport Voices(VoiceCargo cargo)
