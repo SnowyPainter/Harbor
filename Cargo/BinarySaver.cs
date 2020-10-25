@@ -1,36 +1,11 @@
 ﻿using System;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 
 namespace ADPC.Cargo
 {
-    public static class CargoExtension
-    {
-        public static string ToDefault(this DateTime t)
-        {
-            return t.ToString("yyyyMMddHHmmssFFF"); // Why milisec? user clicking time gap
-        }
-        public static bool IsValidPath(this string path)
-        {
-
-            bool isValid = true;
-            try
-            {
-                string fullPath = Path.GetFullPath(path);
-
-                string root = Path.GetPathRoot(path);
-                isValid = string.IsNullOrEmpty(root.Trim(new char[] { '\\', '/' })) == false;
-            }
-            catch (Exception)
-            {
-                isValid = false;
-            }
-
-            return isValid;
-
-        }
-    }
     public class BinarySaver
     {
         public string Savepath { get; set; }
@@ -48,7 +23,11 @@ namespace ADPC.Cargo
             using (Stream stream = File.Open(path != "" ? path : Savepath, FileMode.Open))
             {
                 var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                return (T)binaryFormatter.Deserialize(stream);
+                var deserialized = binaryFormatter.Deserialize(stream);
+                if (deserialized is T)
+                    return (T)deserialized;
+                else
+                    return default;
             }
         }
 
