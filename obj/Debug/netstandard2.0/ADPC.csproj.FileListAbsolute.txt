@@ -37,4 +37,3 @@ E:\C#\ADPC\bin\Debug\netstandard2.0\System.Windows.Input.Manipulations.xml
 E:\C#\ADPC\bin\Debug\netstandard2.0\System.Windows.Forms.xml
 E:\C#\ADPC\bin\Debug\netstandard2.0\System.Runtime.Serialization.Formatters.Soap.xml
 E:\C#\ADPC\obj\Debug\netstandard2.0\ADPC.csproj.CopyComplete
-E:\C#\ADPC\obj\Debug\netstandard2.0\ADPC.csproj.CoreCompileInputs.cache

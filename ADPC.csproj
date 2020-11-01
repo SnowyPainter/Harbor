@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.ML" Version="1.5.2" />
+    <PackageReference Include="protobuf-net" Version="3.0.52" />
   </ItemGroup>
 
   <ItemGroup>

@@ -12,6 +12,7 @@ namespace ADPC.Cargo
         DateTime? PrimaryTime { get; }
         void SetPrimaryTimeOnce(DateTime t);
         bool IsEmpty();
+        //All the cargos must be locked before load at ship.
         void Lock();
         void UnLock();
     }

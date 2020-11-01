@@ -1,12 +1,13 @@
-﻿using System;
+﻿using ADPC.ML;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.ML;
 
 namespace ADPC.Cargo
 {
-    public static class AnalyzeMake
+    public static class AnalysisMake
     {
+        private static TextAnalysis textAnalysis;
 
         public static CargoReport Texts(TextCargo cargo)
         {
@@ -14,17 +15,14 @@ namespace ADPC.Cargo
 
             foreach(var t in cargo.Texts)
             {
-                //Analyze text - emotion, pnp
+                
+                Property.PosNegPercent pnp = textAnalysis.GetPosNegPercentFromText(t);
+                Property.Emotion e = textAnalysis.GetEmotionByPNP(pnp);
             }
 
             return report;
         }
-        public static CargoReport Voices(VoiceCargo cargo)
-        {
-            var report = new CargoReport();
 
-            return report;
-        }
         public static CargoReport Logs(LogCargo cargo)
         {
             var report = new CargoReport();
@@ -37,6 +35,12 @@ namespace ADPC.Cargo
                 //Re ML
                 return null;
             }
+
+            return report;
+        }
+        public static CargoReport Voices(VoiceCargo cargo)
+        {
+            var report = new CargoReport();
 
             return report;
         }
