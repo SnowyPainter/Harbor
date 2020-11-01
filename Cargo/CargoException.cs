@@ -6,6 +6,7 @@ namespace ADPC.Cargo
 {
     public static class CargoExceptionMsg
     {
+        public static readonly string NotLocked = "Cargo is not locked";
         public static readonly string Locked = "Cargo has been already locked";
         public static readonly string Empty = "Cargo is empty, so It can't be loaded to ship";
     }
