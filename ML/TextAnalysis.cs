@@ -5,13 +5,18 @@ using System.Text;
 namespace ADPC.ML
 {
     
-    public static class TextAnalysis
+    public class TextAnalysis
     {
-        public static Property.Emotion GetEmotionFromText(string text)
+        public Property.Emotion GetEmotionFromText(string text)
         {
             return Property.Emotion.Angry;
         }
-        public static Property.PosNegPercent GetPosNegPercentFromText(string text)
+        //Customing by user
+        public Property.Emotion GetEmotionByPNP(Property.PosNegPercent pnp)
+        {
+            return Property.Emotion.Good;
+        }
+        public Property.PosNegPercent GetPosNegPercentFromText(string text)
         {
             var p = new Property.PosNegPercent { Positive = 100f, Negative = 0f };
 
