@@ -1,13 +1,24 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
 using System.Web;
 
 namespace ADPC.Ship
 {
-    public class NetworkShip:IShip //send to server
+    public class NetworkShip:IShip //Support MQTT client, HTTP client
     {
-        //set logging server.
+        public Uri Destination { get; private set; }
 
-        //NetworkShip send private, public data that LocalShip saved to server.
+        private readonly HttpClient httpClient = new HttpClient();
+
+        public NetworkShip()
+        {
+
+        }
+        
+        public void SetDestination(Uri dest)
+        {
+            Destination = dest;
+        }
     }
 }
