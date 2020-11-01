@@ -9,7 +9,7 @@ namespace ADPC.Ship
 {
     public class LocalShip : IShip // save files for private, public - loggings
     {
-
+        #region Variables
         private static string adpctest = $@"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\ADPCTEST";
         private static string documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         public static string TEST_DIR_PATH = $@"{adpctest}";
@@ -18,8 +18,9 @@ namespace ADPC.Ship
         private Dictionary<CargoType, string> privateSavepathByCargo;
         private string publicLogSavepath;
         private string cargoReportSavepath;
-
+        #endregion
         #region Property Getter Setter
+        public ReportFilter ReportCargoFilter { get; set; }
         public string PublicLogSavepath
         {
             get
@@ -65,7 +66,6 @@ namespace ADPC.Ship
 
         private Stack<CargoReport> reports; //separately save(private)
         private Stack<ILoadable> cargos; //separately save(private)
-
         private Stack<LogCargo> logCargos; //separately save(public)
 
         //save public (log) private (pattern, emotion)
@@ -80,6 +80,7 @@ namespace ADPC.Ship
             reports = new Stack<CargoReport>();
             cargos = new Stack<ILoadable>();
             logCargos = new Stack<LogCargo>();
+            ReportCargoFilter = new ReportFilter();
         }
         public LocalShip() : this(
                 new Dictionary<CargoType, string>()
@@ -112,8 +113,10 @@ namespace ADPC.Ship
         {
             if (cargo.IsEmpty())
                 throw new CargoException(CargoExceptionMsg.Empty);
-            if (cargo != null)
+            if (cargo.IsLocked)
                 cargos.Push(cargo);
+            else
+                throw new CargoException(CargoExceptionMsg.NotLocked);
         }
         public void LoadPublicLog(LogCargo log)
         {
@@ -122,11 +125,14 @@ namespace ADPC.Ship
             if (log.IsLocked)
                 logCargos.Push(log);
             else
-                throw new CargoException(CargoExceptionMsg.Locked);
+                throw new CargoException(CargoExceptionMsg.NotLocked);
         }
-        public void LoadReports(CargoReport report)
+        public void LoadReport(CargoReport report)
         {
-            reports.Push(report);
+            if (ReportCargoFilter.Validate(report))
+                reports.Push(report);
+            else
+                throw new FilterException("This report doesn't meet LocalShip's filter that set");
         }
 
         #endregion
@@ -136,7 +142,7 @@ namespace ADPC.Ship
         {
             string[] filePaths = Directory.GetFiles(CargoReportSavepath, $"{(filter == null ? "*r" : filter.ToString())}.dat", SearchOption.TopDirectoryOnly);
 
-            var bs = new BinarySaver();
+            var bs = new BinarySave();
             foreach (var path in filePaths)
             {
                 var r = bs.TransferBinary<CargoReport>(path);
@@ -148,7 +154,7 @@ namespace ADPC.Ship
         public IEnumerable<LogCargo> UnloadPublicLogs(UnloadFilter logCargoFilter = null, UnloadFilter logDatFilter = null)
         {
             string[] cargoDirs = Directory.GetDirectories(PublicLogSavepath, $"{(logCargoFilter == null ? "*" : logCargoFilter.ToString())}", SearchOption.TopDirectoryOnly);
-            var bs = new BinarySaver();
+            var bs = new BinarySave();
             foreach (var cargoDir in cargoDirs)
             {
                 string[] logs = Directory.GetFiles(cargoDir, $"{(logDatFilter == null ? "*l" : logDatFilter.ToString())}.dat", SearchOption.TopDirectoryOnly);
@@ -172,7 +178,7 @@ namespace ADPC.Ship
 
         public IEnumerable<ILoadable> UnloadPrivate(CargoType type, UnloadFilter cargoFilter=null)
         {
-            var bs = new BinarySaver();
+            var bs = new BinarySave();
             var cargoDir = GetPrivateSavepath(type);
             if (Directory.Exists(cargoDir))
             {
@@ -193,7 +199,7 @@ namespace ADPC.Ship
         {
             if (!Directory.Exists(CargoReportSavepath))
                 Directory.CreateDirectory(CargoReportSavepath).Attributes = FileAttributes.Hidden;
-            var bs = new BinarySaver();
+            var bs = new BinarySave();
 
             while (reports.Count > 0)
             {
@@ -206,7 +212,7 @@ namespace ADPC.Ship
         {
             if (!Directory.Exists(PublicLogSavepath))
                 Directory.CreateDirectory(PublicLogSavepath);
-            var bs = new BinarySaver();
+            var bs = new BinarySave();
 
             while (logCargos.Count > 0)
             {
@@ -231,7 +237,7 @@ namespace ADPC.Ship
         {
             if (!Directory.Exists(privateDftRootPath)) //Create hidden root folder for private loadables
                 Directory.CreateDirectory(privateDftRootPath).Attributes = FileAttributes.Hidden;
-            var bs = new BinarySaver();
+            var bs = new BinarySave();
             while (cargos.Count > 0)
             {
                 ILoadable cargo = cargos.Pop();
