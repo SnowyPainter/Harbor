@@ -14,6 +14,20 @@ namespace ADPC.Cargo
         Voice,
         Log
     }
+
+    #region Static Extention
+    public static class CargosExtension
+    {
+        public static T Pop<T>(this List<T> cargos, int index) where T : ILoadable
+        {
+            var c = cargos[index];
+            cargos.RemoveAt(index);
+            return c;
+        }
+    }
+    #endregion
+
+    #region Cargo ProtoContracts & Serializables
     [Serializable]
     [ProtoContract]
     public class RawCargo : ILoadable //A raw data 
@@ -46,7 +60,7 @@ namespace ADPC.Cargo
             IsLocked = false;
         }
     }
-    
+
     [Serializable]
     [ProtoContract]
     public class TextCargo : ILoadable
@@ -158,4 +172,6 @@ namespace ADPC.Cargo
             return logs.Count <= 0 ? true : false;
         }
     }
+
+    #endregion
 }

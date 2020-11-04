@@ -1,8 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using ProtoBuf;
 
 namespace ADPC.Cargo
 {
+
+    #region Static Extension
+    public static class CargoReportExtension
+    {
+        public static CargoReport Pop(this List<CargoReport> reports, int index)
+        {
+            var r = reports[index];
+            reports.RemoveAt(index);
+            return r;
+        }
+    }
+    #endregion
+
+    #region Report ProtoContract & Serializable
     [Serializable]
     [ProtoContract]
     public class CargoReport //Analyzed cargo by cargoType
@@ -18,4 +33,5 @@ namespace ADPC.Cargo
             ReportedTime = DateTime.Now;
         }
     }
+    #endregion
 }
