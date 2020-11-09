@@ -7,7 +7,7 @@ namespace ADPC.Cargo
 {
     public static class AnalysisMake
     {
-        private static TextAnalysis textAnalysis;
+        private static TextAnalysis textAnalysis = new TextAnalysis();
 
         public static CargoReport Texts(TextCargo cargo)
         {
