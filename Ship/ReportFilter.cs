@@ -20,7 +20,7 @@ namespace Harbor.Ship
                 PermitEmotions.Add(e);
         }
 
-        public bool Validate(CargoReport report)
+        public bool Validate(Report report)
         {
             return (MinimumPNP.Negative <= report.PNP.Negative && report.PNP.Negative <= MaximumPNP.Negative
                 && MinimumPNP.Positive <= report.PNP.Positive && report.PNP.Positive <= MaximumPNP.Positive

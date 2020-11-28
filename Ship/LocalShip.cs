@@ -64,7 +64,7 @@ namespace Harbor.Ship
         //private : report, text cargo, voice cargo, generic cargo
         //public : log
 
-        private List<CargoReport> reports; //separately save(private)
+        private List<Report> reports; //separately save(private)
         private List<ILoadable> cargos; //separately save(private)
         private List<LogCargo> logCargos; //separately save(public)
 
@@ -77,7 +77,7 @@ namespace Harbor.Ship
             PublicLogSavepath = publicLogSavepath;
             CargoReportSavepath = cargoReportSavepath;
 
-            reports = new List<CargoReport>();
+            reports = new List<Report>();
             cargos = new List<ILoadable>();
             logCargos = new List<LogCargo>();
             ReportCargoFilter = new ReportFilter();
@@ -127,7 +127,7 @@ namespace Harbor.Ship
             else
                 throw new CargoException(CargoExceptionMsg.NotLocked);
         }
-        public void LoadReport(CargoReport report)
+        public void LoadReport(Report report)
         {
             if (ReportCargoFilter.Validate(report))
                 reports.Add(report);
@@ -145,7 +145,7 @@ namespace Harbor.Ship
         /// </summary>
         /// <param name="index">The index that you will remove and get</param>
         /// <returns>One of the element at index</returns>
-        public CargoReport UnloadReport(int index)
+        public Report UnloadReport(int index)
         {
             return reports.Pop(index);
         }
@@ -156,7 +156,7 @@ namespace Harbor.Ship
         /// </summary>
         /// <param name="filter">Remove by filter. If filter.validate(r) true, then remove.</param>
         /// <returns>CargoReports List conformed the filter passed</returns>
-        public IEnumerable<CargoReport> UnloadReports(ReportFilter filter)
+        public IEnumerable<Report> UnloadReports(ReportFilter filter)
         {
             var reportsByFilter = reports.Where(r => filter.Validate(r));
             reports.RemoveAll(r => filter.Validate(r));
@@ -184,14 +184,14 @@ namespace Harbor.Ship
 
         #endregion
         #region Open from Dirs
-        public IEnumerable<CargoReport> OpenCargoReportsFiles(OpenFileFilter filter = null)
+        public IEnumerable<Report> OpenCargoReportsFiles(OpenFileFilter filter = null)
         {
             string[] filePaths = Directory.GetFiles(CargoReportSavepath, $"{(filter == null ? "*r" : filter.ToString())}.dat", SearchOption.TopDirectoryOnly);
 
             var bs = new BinarySave();
             foreach (var path in filePaths)
             {
-                var r = bs.TransferBinary<CargoReport>(path);
+                var r = bs.TransferBinary<Report>(path);
                 if (r != default)
                     yield return r;
             }

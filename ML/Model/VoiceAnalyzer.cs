@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Harbor.ML
+namespace Harbor.ML.Model
 {
-    public static class Activate
+    public class VoiceAnalyzer
     {
-        
     }
 }

@@ -2,10 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Harbor.ML
+namespace Harbor.ML.Model
 {
-    
-    public class TextAnalysis
+    public interface ITextAnalyzer
+    {
+        Property.Emotion GetEmotionFromText(string text);
+        Property.Emotion GetEmotionByPNP(Property.PosNegPercent pnp);
+        Property.PosNegPercent GetPNPFromText(string text);
+    }
+
+    public class DefaultTextAnalysis : ITextAnalyzer
     {
         public Property.Emotion GetEmotionFromText(string text)
         {
@@ -16,7 +22,7 @@ namespace Harbor.ML
         {
             return Property.Emotion.Good;
         }
-        public Property.PosNegPercent GetPosNegPercentFromText(string text)
+        public Property.PosNegPercent GetPNPFromText(string text)
         {
             var p = new Property.PosNegPercent { Positive = 100f, Negative = 0f };
 

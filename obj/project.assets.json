@@ -1119,11 +1119,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\C#\\PDELib\\Harbor.csproj",
+      "projectUniqueName": "E:\\C#\\Harbor\\Harbor.csproj",
       "projectName": "Harbor",
-      "projectPath": "E:\\C#\\PDELib\\Harbor.csproj",
+      "projectPath": "E:\\C#\\Harbor\\Harbor.csproj",
       "packagesPath": "C:\\Users\\minwo\\.nuget\\packages\\",
-      "outputPath": "E:\\C#\\PDELib\\obj\\",
+      "outputPath": "E:\\C#\\Harbor\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Microsoft\\Xamarin\\NuGet\\",
