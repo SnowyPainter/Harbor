@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web;
 
-namespace ADPC.Ship
+namespace Harbor.Ship
 {
     public class NetworkShip:IShip //Support MQTT client, HTTP client
     {

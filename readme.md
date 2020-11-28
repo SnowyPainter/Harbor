@@ -1,8 +1,8 @@
-# ADPC - Analyze Data to Packet Cargo
+# Harbor - Library for data analysis and management
 
-**ADPC** can be used as a **logger**, **analyzer** and **network** bridge for your servers
+**Harbor** can be used as a **logger**, **analyzer** and **network** bridge for your servers
 
-# ADPC(.NET Standard 2.0) Implementation
+# Harbor(.NET Standard 2.0) Implementation
 1. .NET Core & .NET 5 
 2. .NET Framework 4.6.1
 3. .Mono 5.4
@@ -11,7 +11,3 @@
 6. Xamarin Android 8.0
 7. UWP 10.0.16299
 8. Unity 2018.1
-
-# All in one, ADPC
-
-![](./ADPCdotstructure.png)

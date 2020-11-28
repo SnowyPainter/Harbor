@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ADPC.ML
+namespace Harbor.ML
 {
     public static class Cost
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ADPC.Cargo
+namespace Harbor.Cargo
 {
     public interface ILoadable
     {

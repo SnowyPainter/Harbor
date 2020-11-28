@@ -1,11 +1,6 @@
-E:\C#\ADPC\bin\Debug\netstandard2.0\ADPC.deps.json
-E:\C#\ADPC\bin\Debug\netstandard2.0\ADPC.dll
-E:\C#\ADPC\bin\Debug\netstandard2.0\ADPC.pdb
 E:\C#\ADPC\obj\Debug\netstandard2.0\ADPC.csprojAssemblyReference.cache
 E:\C#\ADPC\obj\Debug\netstandard2.0\ADPC.AssemblyInfoInputs.cache
 E:\C#\ADPC\obj\Debug\netstandard2.0\ADPC.AssemblyInfo.cs
-E:\C#\ADPC\obj\Debug\netstandard2.0\ADPC.dll
-E:\C#\ADPC\obj\Debug\netstandard2.0\ADPC.pdb
 E:\C#\ADPC\bin\Debug\netstandard2.0\PresentationFramework.dll
 E:\C#\ADPC\bin\Debug\netstandard2.0\WindowsBase.dll
 E:\C#\ADPC\bin\Debug\netstandard2.0\System.Xaml.dll
@@ -37,3 +32,9 @@ E:\C#\ADPC\bin\Debug\netstandard2.0\System.Windows.Input.Manipulations.xml
 E:\C#\ADPC\bin\Debug\netstandard2.0\System.Windows.Forms.xml
 E:\C#\ADPC\bin\Debug\netstandard2.0\System.Runtime.Serialization.Formatters.Soap.xml
 E:\C#\ADPC\obj\Debug\netstandard2.0\ADPC.csproj.CopyComplete
+E:\C#\ADPC\obj\Debug\netstandard2.0\ADPC.csproj.CoreCompileInputs.cache
+E:\C#\ADPC\bin\Debug\netstandard2.0\PDELib.deps.json
+E:\C#\ADPC\bin\Debug\netstandard2.0\PDELib.dll
+E:\C#\ADPC\bin\Debug\netstandard2.0\PDELib.pdb
+E:\C#\ADPC\obj\Debug\netstandard2.0\PDELib.dll
+E:\C#\ADPC\obj\Debug\netstandard2.0\PDELib.pdb

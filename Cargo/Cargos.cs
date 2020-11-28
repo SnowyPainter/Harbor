@@ -1,10 +1,10 @@
-﻿using ADPC.Log;
+﻿using Harbor.Log;
 using ProtoBuf;
 using System;
 using System.Collections.Generic;
 using System.Windows;
 
-namespace ADPC.Cargo
+namespace Harbor.Cargo
 {
     [Serializable]
     public enum CargoType

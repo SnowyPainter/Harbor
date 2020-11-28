@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\C#\\ADPC\\ADPC.csproj": {}
+    "E:\\C#\\PDELib\\Harbor.csproj": {}
   },
   "projects": {
-    "E:\\C#\\ADPC\\ADPC.csproj": {
+    "E:\\C#\\PDELib\\Harbor.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\C#\\ADPC\\ADPC.csproj",
-        "projectName": "PDELib",
-        "projectPath": "E:\\C#\\ADPC\\ADPC.csproj",
+        "projectUniqueName": "E:\\C#\\PDELib\\Harbor.csproj",
+        "projectName": "Harbor",
+        "projectPath": "E:\\C#\\PDELib\\Harbor.csproj",
         "packagesPath": "C:\\Users\\minwo\\.nuget\\packages\\",
-        "outputPath": "E:\\C#\\ADPC\\obj\\",
+        "outputPath": "E:\\C#\\PDELib\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Microsoft\\Xamarin\\NuGet\\",

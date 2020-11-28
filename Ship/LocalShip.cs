@@ -1,11 +1,11 @@
-﻿using ADPC.Cargo;
+﻿using Harbor.Cargo;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ADPC.Ship
+namespace Harbor.Ship
 {
     public class LocalShip : IShip // save files for private, public - loggings
     {

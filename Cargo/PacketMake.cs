@@ -2,7 +2,7 @@
 using System.IO;
 using ProtoBuf;
 
-namespace ADPC.Cargo
+namespace Harbor.Cargo
 {
     public class PacketMake //cargo report -> protobuf
     {

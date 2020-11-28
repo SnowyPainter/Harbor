@@ -4,7 +4,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Markup;
 
-namespace ADPC.Log
+namespace Harbor.Log
 {
     public interface IActivityLog //Button clicks, mouse click somewhere etc...
     {
