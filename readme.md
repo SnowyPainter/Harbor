@@ -1,6 +1,6 @@
 # Harbor DUS - DATA UTILIZING SYSTEM
-**Harbor** can be used as a **logger**, **analyzer** and **network** bridge for your servers
-
+**Harbor** can be used as a **logger**, **analyzer** and **network** bridge for your servers  
+![Logo](./logo.png)
 # Harbor(.NET Standard 2.0) Implementation
 1. .NET Core & .NET 5 
 2. .NET Framework 4.6.1
