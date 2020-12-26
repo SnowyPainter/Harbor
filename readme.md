@@ -1,5 +1,4 @@
-# Harbor - Library for data analysis and management
-
+# Harbor DUS - DATA UTILIZING SYSTEM
 **Harbor** can be used as a **logger**, **analyzer** and **network** bridge for your servers
 
 # Harbor(.NET Standard 2.0) Implementation
