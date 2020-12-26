@@ -22,6 +22,11 @@ namespace Harbor.Cargo
         {
             using (Stream stream = File.Open(path != "" ? path : Savepath, FileMode.Open))
             {
+                if(stream.Length == 0)
+                {
+                    //throw new Exception("Stream length 0. There's no body.");
+                    return default;
+                }
                 var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 var deserialized = binaryFormatter.Deserialize(stream);
                 if (deserialized is T)

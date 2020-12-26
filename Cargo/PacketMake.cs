@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using ProtoBuf;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Harbor.Cargo
 {
@@ -16,7 +16,8 @@ namespace Harbor.Cargo
             byte[] packet;
             using(var mstream = new MemoryStream())
             {
-                Serializer.Serialize(mstream,cargo);
+                var binaryFormatter = new BinaryFormatter();
+                binaryFormatter.Serialize(mstream,cargo);
                 packet = mstream.ToArray();
             }
             return packet;
