@@ -4,6 +4,8 @@ using System.Text;
 
 namespace Harbor.Cargo
 {
+    //C# 8.0 인터페이스 기본 구현 사용 필요 / 7
+
     public interface ILoadable
     {
         bool IsLocked { get; set; }

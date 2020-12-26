@@ -1,7 +1,7 @@
 ﻿using Harbor.Log;
-using ProtoBuf;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Windows;
 
 namespace Harbor.Cargo
@@ -9,9 +9,13 @@ namespace Harbor.Cargo
     [Serializable]
     public enum CargoType
     {
+        [EnumMember]
         GenericObject,
+        [EnumMember]
         Text,
+        [EnumMember]
         Voice,
+        [EnumMember]
         Log
     }
 
@@ -29,13 +33,11 @@ namespace Harbor.Cargo
 
     #region Cargo ProtoContracts & Serializables
     [Serializable]
-    [ProtoContract]
     public class RawCargo : ILoadable //A raw data 
     {
         public CargoType Type { get; } = CargoType.GenericObject;
         public DateTime? PrimaryTime { get; private set; }
         public bool IsLocked { get; set; } = false;
-        [ProtoMember(1)]
         public byte[] Data { get; set; }
 
         public RawCargo()
@@ -61,20 +63,19 @@ namespace Harbor.Cargo
         }
     }
 
+    
     [Serializable]
-    [ProtoContract]
     public class TextCargo : ILoadable
     {
         public CargoType Type { get; } = CargoType.Text;
-        [ProtoMember(1)]
         public DateTime? PrimaryTime { get; private set; } = null;
         public bool IsLocked { get; set; } = false;
-        [ProtoMember(2)]
         public List<string> Texts { get; private set; }
         public TextCargo()
         {
             Texts = new List<string>();
         }
+
         public void Load(string text)
         {
             if (!IsLocked)
@@ -97,14 +98,11 @@ namespace Harbor.Cargo
         }
     }
     [Serializable]
-    [ProtoContract]
     public class VoiceCargo : ILoadable
     {
         public CargoType Type { get; } = CargoType.Voice;
-        [ProtoMember(1)]
         public DateTime? PrimaryTime { get; private set; } = null;
         public bool IsLocked { get; set; } = false;
-        [ProtoMember(2)]
         public byte[] RawVoice { get; set; }
 
         public void SetPrimaryTimeOnce(DateTime t) => PrimaryTime = t;
@@ -122,13 +120,10 @@ namespace Harbor.Cargo
         }
     }
     [Serializable]
-    [ProtoContract]
     public class LogCargo : ILoadable
     {
         public CargoType Type { get; } = CargoType.Log;
-        [ProtoMember(1)]
         public DateTime? PrimaryTime { get; private set; } = null;
-        [ProtoMember(2)]
         private Stack<IActivityLog> logs { get; set; }
 
         public bool IsLocked { get; set; } = false;
