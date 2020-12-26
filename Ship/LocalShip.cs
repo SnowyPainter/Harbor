@@ -1,13 +1,14 @@
 ﻿using Harbor.Cargo;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Harbor.Ship
 {
-    public class LocalShip : IShip // save files for private, public - loggings
+    public class LocalShip : Ship // save files for private, public - loggings
     {
         #region Variables
         private static string adpctest = $@"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\ADPCTEST";
@@ -20,7 +21,6 @@ namespace Harbor.Ship
         private string cargoReportSavepath;
         #endregion
         #region Property Getter Setter
-        public ReportFilter ReportCargoFilter { get; set; }
         public string PublicLogSavepath
         {
             get
@@ -64,8 +64,10 @@ namespace Harbor.Ship
         //private : report, text cargo, voice cargo, generic cargo
         //public : log
 
-        private List<Report> reports; //separately save(private)
-        private List<ILoadable> cargos; //separately save(private)
+        /*
+         * protected List<Report> reports; //separately save(private)
+         * protected List<ILoadable> cargos; //separately save(private) 
+         */
         private List<LogCargo> logCargos; //separately save(public)
 
         //save public (log) private (pattern, emotion)
@@ -77,10 +79,9 @@ namespace Harbor.Ship
             PublicLogSavepath = publicLogSavepath;
             CargoReportSavepath = cargoReportSavepath;
 
-            reports = new List<Report>();
-            cargos = new List<ILoadable>();
+            //reports = new List<Report>();
+            //cargos = new List<ILoadable>();
             logCargos = new List<LogCargo>();
-            ReportCargoFilter = new ReportFilter();
         }
         public LocalShip() : this(
                 new Dictionary<CargoType, string>()
@@ -107,17 +108,7 @@ namespace Harbor.Ship
          * 
          */
 
-        #region Loadings
-
-        public void LoadPrivate(ILoadable cargo)
-        {
-            if (cargo.IsEmpty())
-                throw new CargoException(CargoExceptionMsg.Empty);
-            if (cargo.IsLocked)
-                cargos.Add(cargo);
-            else
-                throw new CargoException(CargoExceptionMsg.NotLocked);
-        }
+        #region Loadings - Seperatly implemented for PublicLog in LocalShip
         public void LoadPublicLog(LogCargo log)
         {
             if (log.IsEmpty())
@@ -127,51 +118,9 @@ namespace Harbor.Ship
             else
                 throw new CargoException(CargoExceptionMsg.NotLocked);
         }
-        public void LoadReport(Report report)
-        {
-            if (ReportCargoFilter.Validate(report))
-                reports.Add(report);
-            else
-                throw new FilterException("This report doesn't meet LocalShip's filter that set");
-        }
-
         #endregion
-        #region Unloadings
+        #region Unloadings - Mostly receive from parent SHIP class.
 
-        /// <summary>
-        /// UnloadReport return report & remove that
-        /// 
-        /// WARN : It removes the report at the index
-        /// </summary>
-        /// <param name="index">The index that you will remove and get</param>
-        /// <returns>One of the element at index</returns>
-        public Report UnloadReport(int index)
-        {
-            return reports.Pop(index);
-        }
-        /// <summary>
-        /// UnloadReports return List of CargoReport & remove all of conformed the filter
-        /// 
-        /// WARN : It removes all the reports conformed the filter
-        /// </summary>
-        /// <param name="filter">Remove by filter. If filter.validate(r) true, then remove.</param>
-        /// <returns>CargoReports List conformed the filter passed</returns>
-        public IEnumerable<Report> UnloadReports(ReportFilter filter)
-        {
-            var reportsByFilter = reports.Where(r => filter.Validate(r));
-            reports.RemoveAll(r => filter.Validate(r));
-
-            return reportsByFilter;
-        }
-        /// <summary>
-        /// Return ILoadable at index and remove.
-        /// </summary>
-        /// <param name="index">The index that you will remove & get</param>
-        /// <returns>The ILoadable you selected</returns>
-        public ILoadable UnloadCargo(int index)
-        {
-            return cargos.Pop(index);
-        }
         /// <summary>
         /// Return LogCargo at index and remove.
         /// </summary>
@@ -187,10 +136,11 @@ namespace Harbor.Ship
         public IEnumerable<Report> OpenCargoReportsFiles(OpenFileFilter filter = null)
         {
             string[] filePaths = Directory.GetFiles(CargoReportSavepath, $"{(filter == null ? "*r" : filter.ToString())}.dat", SearchOption.TopDirectoryOnly);
-
+            
             var bs = new BinarySave();
             foreach (var path in filePaths)
             {
+                Debug.WriteLine(path);
                 var r = bs.TransferBinary<Report>(path);
                 if (r != default)
                     yield return r;
@@ -297,26 +247,12 @@ namespace Harbor.Ship
                     cargo.SetPrimaryTimeOnce(DateTime.Now); //Must be preserve!
 
                 bs.Savepath = $@"{privateSavepathByCargo[cargo.Type]}/{cargo.PrimaryTime.GetValueOrDefault().ToDefault()}c.dat";
-                switch (cargo.Type)
-                {
-                    case CargoType.GenericObject:
-                        bs.TransferToBinary(cargo as RawCargo);
-                        break;
-                    case CargoType.Text:
-                        bs.TransferToBinary(cargo as TextCargo);
-                        break;
-                    case CargoType.Voice:
-                        bs.TransferToBinary(cargo as VoiceCargo);
-                        break;
-                    case CargoType.Log:
-                        bs.TransferToBinary(cargo as LogCargo);
-                        break;
-                }
+                SaveCargoAsBinaryFile(bs, cargo);
             }
             cargos.Clear();
 
         }
-        public async Task PullAwayAsync()
+        public override async Task PullAwayAsync()
         {
             var pullingPublic = Task.Run(new Action(() => PullAwayPublicLogs()));
             var pullingPrivate = Task.Run(new Action(() => PullAwayPrivateCargos()));
