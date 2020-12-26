@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -7,6 +8,19 @@ namespace Harbor
 {
     public static class Program
     {
+        public static bool CheckInternetConnection(string pingto)
+        {
+            try
+            {
+                using (var client = new WebClient())
+                using (client.OpenRead(pingto))
+                    return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         /// <summary>
         /// It prevents os going to sleep(power saving mode).
         /// Must be called AllowSleepOrPowerSaving before program is shutdown.
