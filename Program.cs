@@ -8,6 +8,11 @@ namespace Harbor
 {
     public static class Program
     {
+        /// <summary>
+        /// CheckInternetConnection check if the url conduct responsing then return true(internet connected)
+        /// </summary>
+        /// <param name="pingto">Absolute URL that response some</param>
+        /// <returns></returns>
         public static bool CheckInternetConnection(string pingto)
         {
             try
