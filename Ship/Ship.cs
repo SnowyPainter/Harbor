@@ -9,15 +9,16 @@ namespace Harbor.Ship
     {
         public ReportFilter ReportCargoFilter { get; set; } = new ReportFilter();
         protected List<Report> reports= new List<Report>(); //separately save(private)
-        protected List<ILoadable> cargos= new List<ILoadable>(); //separately save(private)
+        protected List<Cargo.Cargo> cargos= new List<Cargo.Cargo>(); //separately save(private)
 
         /// <summary>
         /// If you inherit Ship, Thing you must override to work.
         /// </summary>
         /// <returns></returns>
         #region PullAway
-        public abstract Task PullAwayAsync();
-        public void SaveCargoAsBinaryFile(BinarySave bs,ILoadable cargo)
+        public abstract void PullAwayReports();
+        public abstract void PullAwayCargos();
+        public void SaveCargoAsBinaryFile(BinarySave bs, Cargo.Cargo cargo)
         {
             switch (cargo.Type)
             {
@@ -44,7 +45,7 @@ namespace Harbor.Ship
             else
                 throw new FilterException("This report doesn't meet LocalShip's filter that set");
         }
-        public void LoadPrivate(ILoadable cargo)
+        public void LoadPrivate(Cargo.Cargo cargo)
         {
             if (cargo.IsEmpty())
                 throw new CargoException(CargoExceptionMsg.Empty);
@@ -61,7 +62,7 @@ namespace Harbor.Ship
         /// </summary>
         /// <param name="index">The index that you will remove & get</param>
         /// <returns>The ILoadable you selected</returns>
-        public ILoadable UnloadCargo(int index)
+        public Cargo.Cargo UnloadCargo(int index)
         {
             return cargos.Pop(index);
         }
