@@ -7,16 +7,23 @@ namespace Harbor.Ship
     {
         MQTTBroker,
         HTTPServer,
-        HTTPSServer,
         Wrong,
     };
+    public enum HTTPMethod
+    {
+        POST,
+        GET
+    }
+    /// <summary>
+    /// Principals
+    /// #1 ONLY XML SERIAL SUPPORT.
+    /// </summary>
     public abstract class NetworkShip : Ship
     {
         /// <summary>
         /// Please, Destination must be Absoulute uri.
         /// </summary>
         public Uri Destination { get; protected set; }
-        protected PacketMake packetMake = new PacketMake();
         public bool SetDestination(Uri dest)
         {
             if (dest == null) return false;
@@ -29,10 +36,6 @@ namespace Harbor.Ship
             if (Destination.Scheme == "http")
             {
                 return DestinationType.HTTPServer;
-            }
-            else if (Destination.Scheme == "https")
-            {
-                return DestinationType.HTTPSServer;
             }
             else if (Destination.Scheme == "mqtt")
             {
