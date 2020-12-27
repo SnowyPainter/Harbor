@@ -172,7 +172,7 @@ namespace Harbor.Ship
             }
         }
 
-        public IEnumerable<ILoadable> OpenPrivatesFiles(CargoType type, OpenFileFilter cargoFilter=null)
+        public IEnumerable<Cargo.Cargo> OpenPrivatesFiles(CargoType type, OpenFileFilter cargoFilter=null)
         {
             var bs = new BinarySave();
             var cargoDir = GetPrivateSavepath(type);
@@ -182,7 +182,7 @@ namespace Harbor.Ship
 
                 foreach(var dat in dats)
                 {
-                    yield return bs.TransferBinary<ILoadable>(dat);
+                    yield return bs.TransferBinary<Cargo.Cargo>(dat);
                 }
             }
 
@@ -191,7 +191,7 @@ namespace Harbor.Ship
         #endregion
         #region Pulling Away
 
-        public void PullAwayCargoReports() //Save cargo report
+        public override void PullAwayReports() //Save cargo report
         {
             if (!Directory.Exists(CargoReportSavepath))
                 Directory.CreateDirectory(CargoReportSavepath).Attributes = FileAttributes.Hidden;
@@ -217,7 +217,7 @@ namespace Harbor.Ship
                 var logCargo = logCargos[i];
 
                 if (logCargo.PrimaryTime == null)
-                    logCargo.SetPrimaryTimeOnce(DateTime.Now); //Must be preserve!
+                    logCargo.SetPrimaryTimeNow();
 
                 var logCargoDirPath = $@"{PublicLogSavepath}/{logCargo.PrimaryTime.GetValueOrDefault().ToDefault()}";
                 if (!Directory.Exists(logCargoDirPath))
@@ -231,7 +231,7 @@ namespace Harbor.Ship
             }
             logCargos.Clear();
         }
-        public void PullAwayPrivateCargos() //Save as Cargo
+        public override void PullAwayCargos() //Save as Cargo
         {
             if (!Directory.Exists(privateDftRootPath)) //Create hidden root folder for private loadables
                 Directory.CreateDirectory(privateDftRootPath).Attributes = FileAttributes.Hidden;
@@ -239,12 +239,12 @@ namespace Harbor.Ship
 
             for (int i = cargos.Count - 1; i >= 0; i--)
             {
-                ILoadable cargo = cargos[i];
+                Cargo.Cargo cargo = cargos[i];
                 if (!Directory.Exists(privateSavepathByCargo[cargo.Type]))
                     Directory.CreateDirectory(privateSavepathByCargo[cargo.Type]).Attributes = FileAttributes.Hidden;
 
                 if (cargo.PrimaryTime == null)
-                    cargo.SetPrimaryTimeOnce(DateTime.Now); //Must be preserve!
+                    cargo.SetPrimaryTimeNow();
 
                 bs.Savepath = $@"{privateSavepathByCargo[cargo.Type]}/{cargo.PrimaryTime.GetValueOrDefault().ToDefault()}c.dat";
                 SaveCargoAsBinaryFile(bs, cargo);
@@ -252,11 +252,11 @@ namespace Harbor.Ship
             cargos.Clear();
 
         }
-        public override async Task PullAwayAsync()
+        public async Task PullAwayAsync()
         {
             var pullingPublic = Task.Run(new Action(() => PullAwayPublicLogs()));
-            var pullingPrivate = Task.Run(new Action(() => PullAwayPrivateCargos()));
-            PullAwayCargoReports();
+            var pullingPrivate = Task.Run(new Action(() => PullAwayCargos()));
+            PullAwayReports();
 
             await pullingPublic;
             await pullingPrivate;
