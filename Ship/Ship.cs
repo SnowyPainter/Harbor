@@ -32,7 +32,7 @@ namespace Harbor.Ship
                     bs.TransferToBinary(cargo as VoiceCargo);
                     break;
                 case CargoType.Log:
-                    bs.TransferToBinary(cargo as LogCargo);
+                    bs.TransferToBinary(cargo as WPFLogCargo);
                     break;
             }
         }

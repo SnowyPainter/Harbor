@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net.Mime;
 using System.Threading.Tasks;
 
 namespace Harbor.Ship
@@ -282,19 +280,13 @@ namespace Harbor.Ship
                     cargo.SetPrimaryTimeNow();
 
                 bs.Savepath = $@"{privateSavepathByCargo[cargo.Type]}/{cargo.PrimaryTime.GetValueOrDefault().ToDefault()}{FileEndChar.Cargo}.dat";
-                if (cargo.Type != CargoType.GenericObject)
-                {
-                    SaveCargoAsBinaryFile(bs, cargo);
-                }
+
+                SaveCargoAsBinaryFile(bs, cargo);
                 
             }
             cargos.Clear();
         }
-        public void PullAwayRawCargo<T>(RawCargo<T> c)
-        {
-            var bs = new BinarySave();
-            SaveRawCargoAsBinaryFile<T> (bs, c);
-        }
+
         public async Task PullAwayAsync()
         {
             var pullingPublic = Task.Run(new Action(() => PullAwayPublicLogs()));

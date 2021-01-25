@@ -36,19 +36,13 @@ namespace Harbor.Cargo
     }
     #endregion
 
-    public interface IContentTypeContainer
-    {
-        Type ContentType { get; }
-    }
-
     #region Cargo ProtoContracts & Serializables
     [Serializable]
-    public class RawCargo<T> : Cargo, IContentTypeContainer
+    public class RawCargo : Cargo
     {
-        public List<T> Data { get; private set; }
-        public RawCargo() : base(CargoType.GenericObject) { Data = new List<T>(); }
-        public Type ContentType { get; private set; } = typeof(T);
-        public void Load(T data) {
+        public List<byte> Data { get; private set; }
+        public RawCargo() : base(CargoType.GenericObject) { Data = new List<byte>(); }
+        public void Load(byte data) {
             Data.Add(data);
         }
         public string GetRaw()
@@ -63,7 +57,7 @@ namespace Harbor.Cargo
 
         public override byte[] ToPacket()
         {
-            var serializer = new XmlSerializer(typeof(RawCargo<T>));
+            var serializer = new XmlSerializer(typeof(RawCargo));
             string xml = "";
             using (var writer = new StringWriter())
             {

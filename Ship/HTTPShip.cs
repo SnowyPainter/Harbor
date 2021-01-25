@@ -21,7 +21,7 @@ namespace Harbor.Ship
         public int TimeInterval { get; set; } = 10;
         public HTTPShip(Uri dest)
         {
-            if (dest == null) throw new Exception("Dest uri is null");
+            if (dest == null) throw new Exception("Destination uri is null");
 
             Destination = dest;
         }
