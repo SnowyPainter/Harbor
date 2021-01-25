@@ -1,9 +1,11 @@
 ﻿using Harbor.Cargo;
+using Harbor.Log;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 
 namespace Harbor.Ship
@@ -68,7 +70,7 @@ namespace Harbor.Ship
          * protected List<Report> reports; //separately save(private)
          * protected List<ILoadable> cargos; //separately save(private) 
          */
-        private List<LogCargo> logCargos; //separately save(public)
+        private List<WPFLogCargo> logCargos; //separately save(public)
 
         //save public (log) private (pattern, emotion)
         #region Constructors
@@ -81,7 +83,7 @@ namespace Harbor.Ship
 
             //reports = new List<Report>();
             //cargos = new List<ILoadable>();
-            logCargos = new List<LogCargo>();
+            logCargos = new List<WPFLogCargo>();
         }
         public LocalShip() : this(
                 new Dictionary<CargoType, string>()
@@ -109,7 +111,7 @@ namespace Harbor.Ship
          */
 
         #region Loadings - Seperatly implemented for PublicLog in LocalShip
-        public void LoadPublicLog(LogCargo log)
+        public void LoadPublicLog(WPFLogCargo log)
         {
             if (log.IsEmpty())
                 throw new CargoException(CargoExceptionMsg.Empty);
@@ -126,7 +128,7 @@ namespace Harbor.Ship
         /// </summary>
         /// <param name="index">The index that you will remove & get</param>
         /// <returns>The LogCargo you selected</returns>
-        public LogCargo UnloadLogCargo(int index)
+        public WPFLogCargo UnloadLogCargo(int index)
         {
             return logCargos.Pop(index);
         }
@@ -147,22 +149,46 @@ namespace Harbor.Ship
             }
 
         }
-        public IEnumerable<LogCargo> OpenPublicLogFiles(OpenFileFilter logCargoFilter = null, OpenFileFilter logDatFilter = null)
+        public IEnumerable<WPFLogCargo> OpenPublicWPFLogCargo(OpenFileFilter logCargoFilter = null, OpenFileFilter logDatFilter = null)
         {
             string[] cargoDirs = Directory.GetDirectories(PublicLogSavepath, $"{(logCargoFilter == null ? "*" : logCargoFilter.ToString())}", SearchOption.TopDirectoryOnly);
             var bs = new BinarySave();
             foreach (var cargoDir in cargoDirs)
             {
-                string[] logs = Directory.GetFiles(cargoDir, $"{(logDatFilter == null ? "*l" : logDatFilter.ToString())}.dat", SearchOption.TopDirectoryOnly);
+                string[] logs = Directory.GetFiles(cargoDir, $"{(logDatFilter == null ? "" : logDatFilter.ToString())}{FileEndChar.WPFLog}.dat", SearchOption.TopDirectoryOnly);
                 
-                if (logs.Length <= 0) //Check Empty Cargo <- But Already blocked at Loading to ship.
+                if (logs.Length <= 0)
                     continue;
 
-                LogCargo lc = new LogCargo();
+                WPFLogCargo lc = new WPFLogCargo();
 
                 foreach (var logfile in logs) //Get each logs in cargo(cargo = folder, log = .dat) only for this
                 {
-                    var log = bs.TransferBinary<Log.IActivityLog>(logfile);
+                    var log = bs.TransferBinary<WPFActivityLog>(logfile);
+                    if (log != default)
+                        lc.Load(log);
+                }
+
+                lc.Lock();
+                yield return lc;
+            }
+        }
+        public IEnumerable<DataLogCargo> OpenPublicDataLogCargo(OpenFileFilter logCargoFilter = null, OpenFileFilter logDatFilter = null)
+        {
+            string[] cargoDirs = Directory.GetDirectories(PublicLogSavepath, $"{(logCargoFilter == null ? "*" : logCargoFilter.ToString())}", SearchOption.TopDirectoryOnly);
+            var bs = new BinarySave();
+            foreach (var cargoDir in cargoDirs)
+            {
+                string[] logs = Directory.GetFiles(cargoDir, $"{(logDatFilter == null ? "" : logDatFilter.ToString())}{FileEndChar.DataLog}.dat", SearchOption.TopDirectoryOnly);
+
+                if (logs.Length <= 0)
+                    continue;
+
+                DataLogCargo lc = new DataLogCargo();
+
+                foreach (var logfile in logs) //Get each logs in cargo(cargo = folder, log = .dat) only for this
+                {
+                    var log = bs.TransferBinary<DataLog>(logfile);
                     if (log != default)
                         lc.Load(log);
                 }
@@ -178,7 +204,7 @@ namespace Harbor.Ship
             var cargoDir = GetPrivateSavepath(type);
             if (Directory.Exists(cargoDir))
             {
-                string[] dats = Directory.GetFiles(cargoDir, $"{(cargoFilter == null ? "*c" : cargoFilter.ToString())}.dat", SearchOption.TopDirectoryOnly);
+                string[] dats = Directory.GetFiles(cargoDir, $"{(cargoFilter == null ? "" : cargoFilter.ToString())}*{FileEndChar.Cargo}.dat", SearchOption.TopDirectoryOnly);
 
                 foreach(var dat in dats)
                 {
@@ -200,7 +226,7 @@ namespace Harbor.Ship
             for(int i = reports.Count-1;i >= 0;i--)
             {
                 var report = reports[i];
-                bs.Savepath = $@"{CargoReportSavepath}/{report.ReportedTime.ToDefault()}r.dat";
+                bs.Savepath = $@"{CargoReportSavepath}/{report.ReportedTime.ToDefault()}{FileEndChar.Report}.dat";
                 bs.TransferToBinary(report);
             }
 
@@ -225,7 +251,16 @@ namespace Harbor.Ship
 
                 foreach (Log.IActivityLog log in logCargo.GetLogs())
                 {
-                    bs.Savepath = $@"{logCargoDirPath}/{log.Time.ToDefault()}l.dat";
+                    string endchar = "";
+                    if(log.Type == Log.LogType.Data)
+                    {
+                        endchar = FileEndChar.DataLog;
+                    }
+                    else if(log.Type == Log.LogType.WPFElement)
+                    {
+                        endchar = FileEndChar.WPFLog;
+                    }
+                    bs.Savepath = $@"{logCargoDirPath}/{log.Time.ToDefault()}{endchar}.dat";
                     bs.TransferToBinary<Log.IActivityLog>(log);
                 }
             }
@@ -246,11 +281,19 @@ namespace Harbor.Ship
                 if (cargo.PrimaryTime == null)
                     cargo.SetPrimaryTimeNow();
 
-                bs.Savepath = $@"{privateSavepathByCargo[cargo.Type]}/{cargo.PrimaryTime.GetValueOrDefault().ToDefault()}c.dat";
-                SaveCargoAsBinaryFile(bs, cargo);
+                bs.Savepath = $@"{privateSavepathByCargo[cargo.Type]}/{cargo.PrimaryTime.GetValueOrDefault().ToDefault()}{FileEndChar.Cargo}.dat";
+                if (cargo.Type != CargoType.GenericObject)
+                {
+                    SaveCargoAsBinaryFile(bs, cargo);
+                }
+                
             }
             cargos.Clear();
-
+        }
+        public void PullAwayRawCargo<T>(RawCargo<T> c)
+        {
+            var bs = new BinarySave();
+            SaveRawCargoAsBinaryFile<T> (bs, c);
         }
         public async Task PullAwayAsync()
         {
