@@ -3,48 +3,23 @@ using System;
 
 namespace Harbor.Ship
 {
-    public enum DestinationType
-    {
-        MQTTBroker,
-        HTTPServer,
-        Wrong,
-    };
-    public enum HTTPMethod
-    {
-        POST,
-        GET
-    }
     /// <summary>
     /// Principals
     /// #1 ONLY XML SERIAL SUPPORT.
     /// </summary>
     public abstract class NetworkShip : Ship
     {
+        protected static readonly HttpClient HttpClient = new HttpClient();
+
         /// <summary>
         /// Please, Destination must be Absoulute uri.
         /// </summary>
-        public Uri Destination { get; protected set; }
-        public bool SetDestination(Uri dest)
-        {
-            if (dest == null) return false;
-            Destination = dest;
-            return true;
-        }
+        public Uri Destination { get; set; }
 
-        public DestinationType GetDestinationType()
+        protected NetworkShip(Uri destination)
         {
-            if (Destination.Scheme == "http")
-            {
-                return DestinationType.HTTPServer;
-            }
-            else if (Destination.Scheme == "mqtt")
-            {
-                return DestinationType.MQTTBroker;
-            }
-            else
-            {
-                return DestinationType.Wrong;
-            }
+            if (destination == null) throw new Exception("Destination uri is null");
+            Destination = destination;
         }
     }
 }

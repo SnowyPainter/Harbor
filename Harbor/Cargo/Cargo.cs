@@ -38,6 +38,6 @@ namespace Harbor.Cargo
             IsLocked = false;
         }
 
-        public abstract byte[] ToPacket();
+        public abstract string ToXMLPacket();
     }
 }

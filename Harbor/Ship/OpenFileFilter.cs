@@ -4,8 +4,12 @@ using System.Text;
 
 namespace Harbor.Ship
 {
+    public static class OpenFileFilterExtension
+    {
+    }
     public class OpenFileFilter
     {
+        public static OpenFileFilter All = new OpenFileFilter("");
         //Filtering by Time ( Year, Year-Month, Year-Month-Day )
         //{year}*, {year}{month}*, {year}{month}{day}*
         public string Year, Month, Day;

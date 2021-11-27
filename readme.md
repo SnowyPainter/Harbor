@@ -3,21 +3,11 @@
 ![Logo](./logo.png)
 
 # Why Harbor DUS?
-1. For developing fast  
+1. For develope fast  
 2. For collecting precious data  
-3. _For no stress_
+3. For no complicated and meaning database query.
 
 **Simple the reason** but also it's the **main point for developing**  
-
-# Harbor(.NET Standard 2.0) Implementation
-1. .NET Core & .NET 5 
-2. .NET Framework 4.6.1
-3. .Mono 5.4
-4. Xamarin.iOS 10.14
-5. Xamarin.Mac 3.8
-6. Xamarin Android 8.0
-7. UWP 10.0.16299
-8. Unity 2018.1
 
 # Documentation
 
@@ -36,49 +26,18 @@ The ***PrimaryTime*** is very worth data for who collects.
 It is implemented ```ToPacket```  
 All the custom cargo have to inherit Harbor.Cargo.Cargo.
 
-## Cargos(Cargo/Cargos.cs), *Report(ML/Report.cs)
-### *Report
----
-#### Properties
-1. PNP
-2. Emotion
-3. **ReportedTime**
----
-### RawCargo
-It has a byte array. so it is called ```RawCargo```  
-Can contain anything which could be byte array.   
-And the others ...  
-
----
-1. LogCargo
-2. TextCargo
-3. *VoiceCargo
----
-
 ## Ships
 ### LocalShip  
 ---
 Saves data that load into cargo where set path(individual).  
 ```Open...``` To read cargos from directory.  
 ```PullAway...``` To save cargos to directory.  
-All the datas are serialized to binary.
+All the datas are serialized to json.
 ### NetworkShip  
 ---
-*As MQTT Client, send reports to server.  
 As HTTP Client, send reports, etc ... to server.  
 Every cargos are able to be xml byte array packet.  
 All the datas are serialized to xml. (application/xml)  
-## Analyzing
-Basic loss, cost & activating functions are supported and it also can be customized.
-* Classifier models such as knn, lr, etc ...
-* Text analyzing models & dataset
-* Analyzing by user logs must be optimized for the program it used be.  
-
-There is no data that suits all situations for logs.
-
-## Program.cs
-Just a utility code.
-```PreventSleepOrPowerSaving```, ```CheckInternetConnection``` ... etc  
 
 # Example
 
@@ -88,10 +47,10 @@ And most methods and parameters are commented. (hovering text - visual studio)
 ``` cs
 LocalShip localShip = new LocalShip();
 HTTPShip httpShip = new HTTPShip();
-LogCargo mainLogCargo = new LogCargo();
 ```
 
-## LocalShip Initialize with arguments 
+## LocalShip Initialize with arguments
+All the paths must be Absolute path.
 ``` cs
 new LocalShip(
     new Dictionary<CargoType, string>() //Hidden folders
@@ -107,6 +66,13 @@ new LocalShip(
 ```
 
 ## Add log router to every buttons
+### Custom DataLog  
+To implement IDataLog
+``` cs
+class MyLog:IDataLog {
+    ...
+}
+```
 ``` cs
 public MainWindow()
 {
@@ -119,7 +85,7 @@ public MainWindow()
 }
 private void LogRoute(object sender, RoutedEventArgs e)
 {
-    mainLogCargo.Load(DateTime.Now, sender as Button, Mouse.GetPosition(this));
+    logCargo.Load(...);
 }
 ```
 
@@ -128,9 +94,9 @@ private void LogRoute(object sender, RoutedEventArgs e)
 
 _Check empty first, lock it & load to Ship!_
 ``` cs
-if (mainLogCargo.IsEmpty()) return;
-mainLogCargo.Lock();
-localShip.LoadPublicLog(mainLogCargo);
+if (logCargo.IsEmpty()) return;
+logCargo.Lock();
+localShip.LoadPublicLog(logCargo);
 ```
 
 ## PullAway LocalShip

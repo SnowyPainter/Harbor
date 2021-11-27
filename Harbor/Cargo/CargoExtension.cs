@@ -19,7 +19,8 @@ namespace Harbor.Cargo
             {
                 string fullPath = Path.GetFullPath(path);
 
-                string root = Path.GetPathRoot(path);
+                string? root = Path.GetPathRoot(path);
+                if (root == null) throw new Exception();
                 isValid = string.IsNullOrEmpty(root.Trim(new char[] { '\\', '/' })) == false;
             }
             catch (Exception)

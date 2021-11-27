@@ -6,14 +6,11 @@ namespace Harbor.Ship
 {
     public static class UriExtention
     {
-        public static Uri GetUriIfAbsolute(string url)
+        public static Uri? GetUriIfAbsolute(string url)
         {
-            Uri uri;
-            if(Uri.TryCreate(url, UriKind.Absolute, out uri)) 
-            {
-                return uri;
-            }
-            return null;
+            Uri? uri = null;
+            Uri.TryCreate(url, UriKind.Absolute, out uri);
+            return uri;
         }
     }
 }

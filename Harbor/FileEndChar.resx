@@ -123,10 +123,4 @@
   <data name="DataLog" xml:space="preserve">
     <value>dl</value>
   </data>
-  <data name="Report" xml:space="preserve">
-    <value>r</value>
-  </data>
-  <data name="WPFLog" xml:space="preserve">
-    <value>wl</value>
-  </data>
 </root>

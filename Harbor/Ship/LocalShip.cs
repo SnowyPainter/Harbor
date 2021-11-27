@@ -1,5 +1,4 @@
 ﻿using Harbor.Cargo;
-using Harbor.Log;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,42 +10,24 @@ namespace Harbor.Ship
     public class LocalShip : Ship // save files for private, public - loggings
     {
         #region Variables
-        private static string adpctest = $@"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\ADPCTEST";
         private static string documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        public static string TEST_DIR_PATH = $@"{adpctest}";
-        private static string privateDftRootPath = $@"{TEST_DIR_PATH}/privates";
 
         private Dictionary<CargoType, string> privateSavepathByCargo;
-        private string publicLogSavepath;
-        private string cargoReportSavepath;
+        private string? publicDataSavepath = "./";
         #endregion
         #region Property Getter Setter
-        public string PublicLogSavepath
+        public string? PublicDataSavepath
         {
             get
             {
-                return publicLogSavepath;
+                return publicDataSavepath;
             }
             set
             {
-                if (value.IsValidPath())
-                    publicLogSavepath = value;
+                if (value != null && value.IsValidPath())
+                    publicDataSavepath = value;
                 else
-                    publicLogSavepath = null;
-            }
-        }
-        public string CargoReportSavepath
-        {
-            get
-            {
-                return cargoReportSavepath;
-            }
-            set
-            {
-                if (value.IsValidPath())
-                    cargoReportSavepath = value;
-                else
-                    cargoReportSavepath = null;
+                    publicDataSavepath = null;
             }
         }
 
@@ -61,38 +42,26 @@ namespace Harbor.Ship
         }
         #endregion
 
-        //private : report, text cargo, voice cargo, generic cargo
-        //public : log
-
-        /*
-         * protected List<Report> reports; //separately save(private)
-         * protected List<ILoadable> cargos; //separately save(private) 
-         */
-        private List<WPFLogCargo> logCargos; //separately save(public)
-
-        //save public (log) private (pattern, emotion)
+        //private : log cargo, text cargo, voice cargo, generic cargo
+        //public : log cargo
         #region Constructors
-        public LocalShip(Dictionary<CargoType, string> privateSavepaths, string publicLogSavepath, string cargoReportSavepath)
+        public LocalShip(Dictionary<CargoType, string> privateSavepaths, string publicLogSavepath)
         {
-
             privateSavepathByCargo = privateSavepaths;
-            PublicLogSavepath = publicLogSavepath;
-            CargoReportSavepath = cargoReportSavepath;
+            PublicDataSavepath = publicLogSavepath;
 
-            //reports = new List<Report>();
-            //cargos = new List<ILoadable>();
-            logCargos = new List<WPFLogCargo>();
+            privateCargos = new List<Cargo.Cargo>();
+            publicCargos = new List<DataCargo>();
         }
         public LocalShip() : this(
                 new Dictionary<CargoType, string>()
                 {
-                    {CargoType.GenericObject, $@"{privateDftRootPath}/generic"},
-                    {CargoType.Text, $@"{privateDftRootPath}/txt"},
-                    {CargoType.Voice, $@"{privateDftRootPath}/talk"},
-                    {CargoType.Log, $@"{privateDftRootPath}/log"}
+                    {CargoType.GenericObject, $@"{documents}/generic"},
+                    {CargoType.Text, $@"{documents}/txt"},
+                    {CargoType.Voice, $@"{documents}/talk"},
+                    {CargoType.Log, $@"{documents}/log"}
                 },
-                $@"{TEST_DIR_PATH}/logs",
-                $@"{TEST_DIR_PATH}/reports"
+                $@"{documents}/logs"
             )
         { }
 
@@ -103,198 +72,133 @@ namespace Harbor.Ship
          * 
          * Idenify
          * cargo = last char = 'c'
-         * report = last char = 'r'
          * each log = last char = 'l'
          * 
          */
 
-        #region Loadings - Seperatly implemented for PublicLog in LocalShip
-        public void LoadPublicLog(WPFLogCargo log)
-        {
-            if (log.IsEmpty())
-                throw new CargoException(CargoExceptionMsg.Empty);
-            if (log.IsLocked)
-                logCargos.Add(log);
-            else
-                throw new CargoException(CargoExceptionMsg.NotLocked);
-        }
-        #endregion
-        #region Unloadings - Mostly receive from parent SHIP class.
-
-        /// <summary>
-        /// Return LogCargo at index and remove.
-        /// </summary>
-        /// <param name="index">The index that you will remove & get</param>
-        /// <returns>The LogCargo you selected</returns>
-        public WPFLogCargo UnloadLogCargo(int index)
-        {
-            return logCargos.Pop(index);
-        }
-
-        #endregion
         #region Open from Dirs
-        public IEnumerable<Report> OpenCargoReportsFiles(OpenFileFilter filter = null)
+        /// <summary>
+        /// Open logs and group to cargo, and return.
+        /// </summary>
+        /// <param name="openDir">Principal, PublicLogSavepath</param>
+        /// <param name="logCargoFilter"></param>
+        /// <param name="logDatFilter"></param>
+        /// <returns></returns>
+        public List<DataCargo> OpenPublicDataCargo(string openDir, OpenFileFilter logCargoFilter, OpenFileFilter logDatFilter)
         {
-            string[] filePaths = Directory.GetFiles(CargoReportSavepath, $"{(filter == null ? "*r" : filter.ToString())}.dat", SearchOption.TopDirectoryOnly);
-            
-            var bs = new BinarySave();
-            foreach (var path in filePaths)
-            {
-                Debug.WriteLine(path);
-                var r = bs.TransferBinary<Report>(path);
-                if (r != default)
-                    yield return r;
-            }
-
-        }
-        public IEnumerable<WPFLogCargo> OpenPublicWPFLogCargo(OpenFileFilter logCargoFilter = null, OpenFileFilter logDatFilter = null)
-        {
-            string[] cargoDirs = Directory.GetDirectories(PublicLogSavepath, $"{(logCargoFilter == null ? "*" : logCargoFilter.ToString())}", SearchOption.TopDirectoryOnly);
-            var bs = new BinarySave();
+            var logCargos = new List<DataCargo>();
+            string[] cargoDirs = Directory.GetDirectories(openDir, logCargoFilter.ToString(), SearchOption.TopDirectoryOnly);
+            var bs = new JsonSaves();
             foreach (var cargoDir in cargoDirs)
             {
-                string[] logs = Directory.GetFiles(cargoDir, $"{(logDatFilter == null ? "" : logDatFilter.ToString())}{FileEndChar.WPFLog}.dat", SearchOption.TopDirectoryOnly);
-                
+                string[] logs = Directory.GetFiles(cargoDir, $"{logDatFilter.ToString()}{FileEndChar.DataLog}.dat", SearchOption.TopDirectoryOnly);
+
                 if (logs.Length <= 0)
                     continue;
 
-                WPFLogCargo lc = new WPFLogCargo();
+                DataCargo lc = new DataCargo();
 
                 foreach (var logfile in logs) //Get each logs in cargo(cargo = folder, log = .dat) only for this
                 {
-                    var log = bs.TransferBinary<WPFActivityLog>(logfile);
+                    var log = bs.TransferToObject<Data>(logfile);
                     if (log != default)
                         lc.Load(log);
                 }
 
                 lc.Lock();
-                yield return lc;
+                logCargos.Add(lc);
             }
+            return logCargos;
         }
-        public IEnumerable<DataLogCargo> OpenPublicDataLogCargo(OpenFileFilter logCargoFilter = null, OpenFileFilter logDatFilter = null)
+        public List<Cargo.Cargo> OpenPrivatesFiles(CargoType type, OpenFileFilter cargoFilter)
         {
-            string[] cargoDirs = Directory.GetDirectories(PublicLogSavepath, $"{(logCargoFilter == null ? "*" : logCargoFilter.ToString())}", SearchOption.TopDirectoryOnly);
-            var bs = new BinarySave();
-            foreach (var cargoDir in cargoDirs)
-            {
-                string[] logs = Directory.GetFiles(cargoDir, $"{(logDatFilter == null ? "" : logDatFilter.ToString())}{FileEndChar.DataLog}.dat", SearchOption.TopDirectoryOnly);
-
-                if (logs.Length <= 0)
-                    continue;
-
-                DataLogCargo lc = new DataLogCargo();
-
-                foreach (var logfile in logs) //Get each logs in cargo(cargo = folder, log = .dat) only for this
-                {
-                    var log = bs.TransferBinary<DataLog>(logfile);
-                    if (log != default)
-                        lc.Load(log);
-                }
-
-                lc.Lock();
-                yield return lc;
-            }
-        }
-
-        public IEnumerable<Cargo.Cargo> OpenPrivatesFiles(CargoType type, OpenFileFilter cargoFilter=null)
-        {
-            var bs = new BinarySave();
+            List<Cargo.Cargo> cargos = new List<Cargo.Cargo>();
+            var bs = new JsonSaves();
             var cargoDir = GetPrivateSavepath(type);
             if (Directory.Exists(cargoDir))
             {
-                string[] dats = Directory.GetFiles(cargoDir, $"{(cargoFilter == null ? "" : cargoFilter.ToString())}*{FileEndChar.Cargo}.dat", SearchOption.TopDirectoryOnly);
+                //get all files in cargoFilter.ToString() which end char is Cargo(=privates)
+                string[] dats = Directory.GetFiles(cargoDir, $"{cargoFilter.ToString()}*{FileEndChar.Cargo}.dat", SearchOption.TopDirectoryOnly);
 
                 foreach(var dat in dats)
                 {
-                    yield return bs.TransferBinary<Cargo.Cargo>(dat);
+                    var val = bs.TransferToObject<Cargo.Cargo>(dat);
+                    if (val == null) continue;
+                    cargos.Add(val);
                 }
             }
+            return cargos;
 
         }
-
         #endregion
         #region Pulling Away
-
-        public override void PullAwayReports() //Save cargo report
+        public void PullAwayPublicData()
         {
-            if (!Directory.Exists(CargoReportSavepath))
-                Directory.CreateDirectory(CargoReportSavepath).Attributes = FileAttributes.Hidden;
-            var bs = new BinarySave();
+            if (PublicDataSavepath != null && !Directory.Exists(PublicDataSavepath))
+                Directory.CreateDirectory(PublicDataSavepath);
+            var bs = new JsonSaves();
 
-            for(int i = reports.Count-1;i >= 0;i--)
+            for (int i = publicCargos.Count - 1; i >= 0; i--)
             {
-                var report = reports[i];
-                bs.Savepath = $@"{CargoReportSavepath}/{report.ReportedTime.ToDefault()}{FileEndChar.Report}.dat";
-                bs.TransferToBinary(report);
-            }
-
-            reports.Clear();
-        }
-        public void PullAwayPublicLogs() //Save(dat) each **log** in cargo
-        {
-            if (!Directory.Exists(PublicLogSavepath))
-                Directory.CreateDirectory(PublicLogSavepath);
-            var bs = new BinarySave();
-
-            for (int i = logCargos.Count - 1; i >= 0; i--)
-            {
-                var logCargo = logCargos[i];
+                var logCargo = publicCargos[i];
 
                 if (logCargo.PrimaryTime == null)
                     logCargo.SetPrimaryTimeNow();
 
-                var logCargoDirPath = $@"{PublicLogSavepath}/{logCargo.PrimaryTime.GetValueOrDefault().ToDefault()}";
+                var logCargoDirPath = $@"{PublicDataSavepath}/{logCargo.PrimaryTime.GetValueOrDefault().ToDefault()}";
                 if (!Directory.Exists(logCargoDirPath))
                     Directory.CreateDirectory(logCargoDirPath);
 
-                foreach (Log.IActivityLog log in logCargo.GetLogs())
+                foreach (var log in logCargo.GetDatas())
                 {
-                    string endchar = "";
-                    if(log.Type == Log.LogType.Data)
-                    {
-                        endchar = FileEndChar.DataLog;
-                    }
-                    else if(log.Type == Log.LogType.WPFElement)
-                    {
-                        endchar = FileEndChar.WPFLog;
-                    }
-                    bs.Savepath = $@"{logCargoDirPath}/{log.Time.ToDefault()}{endchar}.dat";
-                    bs.TransferToBinary<Log.IActivityLog>(log);
+                    var dt = DateTime.Now.ToString("mmssffffff");
+                    bs.SaveToObject(log, $@"{logCargoDirPath}/{dt}{FileEndChar.DataLog}.dat");
                 }
             }
-            logCargos.Clear();
+            publicCargos.Clear();
         }
-        public override void PullAwayCargos() //Save as Cargo
+        public override void PullAwayPrivateCargos()
         {
-            if (!Directory.Exists(privateDftRootPath)) //Create hidden root folder for private loadables
-                Directory.CreateDirectory(privateDftRootPath).Attributes = FileAttributes.Hidden;
-            var bs = new BinarySave();
+            if (!Directory.Exists(documents)) //Create hidden root folder for private loadables
+                Directory.CreateDirectory(documents).Attributes = FileAttributes.Hidden;
+            var bs = new JsonSaves();
 
-            for (int i = cargos.Count - 1; i >= 0; i--)
+            for (int i = privateCargos.Count - 1; i >= 0; i--)
             {
-                Cargo.Cargo cargo = cargos[i];
+                Cargo.Cargo cargo = privateCargos[i];
                 if (!Directory.Exists(privateSavepathByCargo[cargo.Type]))
                     Directory.CreateDirectory(privateSavepathByCargo[cargo.Type]).Attributes = FileAttributes.Hidden;
 
                 if (cargo.PrimaryTime == null)
                     cargo.SetPrimaryTimeNow();
+                var path = $@"{privateSavepathByCargo[cargo.Type]}/{cargo.PrimaryTime.GetValueOrDefault().ToDefault()}{FileEndChar.Cargo}.dat";
 
-                bs.Savepath = $@"{privateSavepathByCargo[cargo.Type]}/{cargo.PrimaryTime.GetValueOrDefault().ToDefault()}{FileEndChar.Cargo}.dat";
+                switch (cargo.Type)
+                {
+                    case Cargo.CargoType.GenericObject:
+                        bs.SaveToObject(cargo as Cargo.RawCargo, path);
+                        break;
+                    case Cargo.CargoType.Text:
+                        bs.SaveToObject(cargo as Cargo.TextCargo, path);
+                        break;
+                    case Cargo.CargoType.Voice:
+                        bs.SaveToObject(cargo as Cargo.VoiceCargo, path);
+                        break;
+                    case Cargo.CargoType.Log:
+                        bs.SaveToObject(cargo as Cargo.DataCargo, path);
+                        break;
+                }
 
-                SaveCargoAsBinaryFile(bs, cargo);
-                
             }
-            cargos.Clear();
+            privateCargos.Clear();
         }
 
         public async Task PullAwayAsync()
         {
-            var pullingPublic = Task.Run(new Action(() => PullAwayPublicLogs()));
-            var pullingPrivate = Task.Run(new Action(() => PullAwayCargos()));
-            PullAwayReports();
+            var pullingPublic = Task.Run(new Action(() => PullAwayPublicData()));
+             PullAwayPrivateCargos();
 
             await pullingPublic;
-            await pullingPrivate;
         }
         #endregion
     }
