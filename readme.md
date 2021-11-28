@@ -1,107 +1,65 @@
-# Harbor DUS - DATA UTILIZING SYSTEM
-**Harbor** can be used as a **logger**, **analyzer** and **network** bridge for your servers  
-![Logo](./logo.png)
+# Harbor
 
-# Why Harbor DUS?
-1. For develope fast  
-2. For collecting precious data  
-3. For no complicated and meaning database query.
+프로그램 하나 만드는데 파일 저장 같은 것이 존재하여 오브젝트들을 관리하기 귀찮아지고, Serialize 작업 또한 고되기 쉽상입니다.  
+**Harbor**는 사용자가 만드는 데이터를 저장하게 해줍니다.  
+사용자는 Text Message, Voice data를 만드는데, 이것을 Private Directory에 넣어 관리할 수 있습니다.  
+이것 뿐만이 아니라 원형으로 제공되는 ```Data class```는 원하는대로 사용 가능합니다.  
 
-**Simple the reason** but also it's the **main point for developing**  
+# Cargo
+**Cargo**덕택에 필요한 정보를 실제 Directory로 옮기는데에 편리해지고, 코딩하기에 깔끔해집니다.  
+Cargo에 User Log를 담을 만한 충분한 프로퍼티가 있는 커스텀 클래스를 작성하는 것도 좋습니다.  
+사용자의 말들을 저장할 수 있습니다.
+Cargo의 Unlock, Lock 기능으로 저장까지의 '변형'을 충분히 막을 수 있습니다.  
 
-# Documentation
 
-_Sentences which have '*' of its head are not implemented_
-
-## Abstract Classes
-### **Harbor.Cargo.Cargo**
-#### Properties
-1. IsLocked (boolean)
-2. Type (CargoType)
-3. ***PrimaryTime*** (DateTime nullable)
-
-The ***PrimaryTime*** is very worth data for who collects.  
-> Preferably ***PrimaryTime*** shouldn't be changed periodically.  
-
-It is implemented ```ToPacket```  
-All the custom cargo have to inherit Harbor.Cargo.Cargo.
-
-## Ships
-### LocalShip  
----
-Saves data that load into cargo where set path(individual).  
-```Open...``` To read cargos from directory.  
-```PullAway...``` To save cargos to directory.  
-All the datas are serialized to json.
-### NetworkShip  
----
-As HTTP Client, send reports, etc ... to server.  
-Every cargos are able to be xml byte array packet.  
-All the datas are serialized to xml. (application/xml)  
+# Ship
+Ship은 ```HttpShip```과 ```LocalShip```으로 나뉩니다. 이것들은 모은 Cargo들을 어느 서버에 Request 하거나, 실제 사용자 컴퓨터에 저장하는 작업을 수행합니다.  
+LocalShip은 Constructor에서 지정한 다양한 Path에 관해 적재된 Cargo들을 저장합니다.  
+한편, HttpShip은 마찬가지로 어떠한 주소로 xml serialized packet을 POST method로 전달합니다.
 
 # Example
-
-Mostly ressemble name class & functions process ressemble works.  
-And most methods and parameters are commented. (hovering text - visual studio)  
-
 ``` cs
-LocalShip localShip = new LocalShip();
-HTTPShip httpShip = new HTTPShip();
-```
+using Harbor;
+using Harbor.Ship;
+using Harbor.Cargo;
 
-## LocalShip Initialize with arguments
-All the paths must be Absolute path.
-``` cs
-new LocalShip(
-    new Dictionary<CargoType, string>() //Hidden folders
-    {
-        {CargoType.GenericObject, $@"{anypath}/generic_stuff"},
-        {CargoType.Text, $@"{anypath2}/txts_on_app"},
-        {CargoType.Voice, $@"{anypath3}/talks"},
-        {CargoType.Log, $@"{anypath2}/logdir"}
-    },
-    $@"{documents}/your_logs", //Public folder
-    $@"{TEST_DIR_PATH}/private_reports", //Hidden folder
-);
-```
-
-## Add log router to every buttons
-### Custom DataLog  
-To implement IDataLog
-``` cs
-class MyLog:IDataLog {
-    ...
-}
-```
-``` cs
-public MainWindow()
+namespace TestApp
 {
-    InitializeComponent();
-
-    foreach (Button button in UserInteraction.Children.OfType<Button>())
+    public class Program
     {
-        button.Click += LogRoute;
+        static void Main(string[] args)
+        {
+            const string abs = @"C:\Users\me\Documents";
+            LocalShip localShip = new LocalShip(
+                new Dictionary<CargoType, string>() //Hidden folders
+                {
+                    {CargoType.GenericObject, $@"{abs}/generic_stuff"},
+                    {CargoType.Text, $@"{abs}/txts_on_app"},
+                    {CargoType.Voice, $@"{abs}/talks"},
+                    {CargoType.Log, $@"{abs}/logdir"}
+                },
+                $@"{abs}\datalog" //Public folder
+            );
+
+            DataCargo logs = new DataCargo();
+
+            logs.Load(new Data { Content = "code" });
+            logs.Lock();
+
+            localShip.LoadPublic(logs);
+            localShip.PullAwayPublicData();
+
+            foreach(var a in localShip.OpenPublicDataCargo(localShip.PublicDataSavepath, OpenFileFilter.All, OpenFileFilter.All))
+            {
+                a.UnLock();
+                foreach(var b in a.GetDatas()) {
+                    Console.WriteLine(b.Content);
+                }
+                
+            }
+            
+            return;
+        }
     }
 }
-private void LogRoute(object sender, RoutedEventArgs e)
-{
-    logCargo.Load(...);
-}
-```
-
-## Load cargo to local ship
-> Checking the cargo & data's are ok is very important.  
-
-_Check empty first, lock it & load to Ship!_
-``` cs
-if (logCargo.IsEmpty()) return;
-logCargo.Lock();
-localShip.LoadPublicLog(logCargo);
-```
-
-## PullAway LocalShip
-It's very high cost processing (every pulling away).  
-So, It's important to check the cargo data collected intact.
-``` cs
-await localShip.PullAwayAsync();
 ```
