@@ -16,6 +16,8 @@ namespace Harbor.DB
         {
             get
             {
+                var conn = Connection;
+                conn.Open();
                 return Connection.CreateCommand();
             }
         }
