@@ -77,6 +77,14 @@ namespace Harbor.Ship
          */
 
         #region Open from Dirs
+        public string? OpenFile(string file)
+        {
+            if (File.Exists(file))
+                return File.ReadAllText(file);
+            else
+                return null;
+        }
+
         /// <summary>
         /// Open logs and group to cargo, and return.
         /// </summary>
@@ -132,6 +140,20 @@ namespace Harbor.Ship
         }
         #endregion
         #region Pulling Away
+        /// <summary>
+        /// It Deletes when if file exists.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="content"></param>
+        /// <returns></returns>
+        public void PullAwayFile(string file, string content)
+        {
+            if(File.Exists(file))
+            {
+                File.Delete(file);
+            }
+            File.WriteAllText(file, content);
+        }
         public void PullAwayPublicData()
         {
             if (PublicDataSavepath != null && !Directory.Exists(PublicDataSavepath))
